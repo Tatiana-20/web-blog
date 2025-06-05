@@ -2,7 +2,7 @@ export const CreatePost = async (
   form: {
     title: string;
     content: string;
-    status: string;
+    authorId: number;
   },
   token: string
 ) => {

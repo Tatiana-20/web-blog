@@ -1,7 +1,9 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { IoNewspaper } from "react-icons/io5";
+import { IoLogOut } from "react-icons/io5";
 
 export default function Aside() {
   const { data: session, status } = useSession();
@@ -20,14 +22,31 @@ export default function Aside() {
               alt="User"
               width={100}
               height={100}
-              className="w-24 h-24 rounded-full mb-2"
+              className="w-auto h-6 md:h-12 lg:h-24 rounded-full mb-2"
             />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg hidden md:block font-semibold text-gray-900 dark:text-white">
               {session?.user?.name}
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm hidden md:block text-gray-600 dark:text-gray-400">
               {session?.user?.email}
             </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-4 mt-4">
+              <Link
+                href="/write"
+                className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded text-xs md:text-md"
+              >
+                <IoNewspaper className="inline-block mr-2" />
+                <span className="hidden md:block">Escribir</span>
+              </Link>
+              <button
+                className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded text-xs md:text-md"
+                onClick={() => signOut()}
+              >
+                <IoLogOut className="inline-block mr-2" />
+                <span className="hidden md:block">Cerrar sesión</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center mb-4">
@@ -36,7 +55,7 @@ export default function Aside() {
               alt="User"
               width={100}
               height={100}
-              className="w-24 h-24 rounded-full mb-4"
+              className="w-auto h-6 md:h-14 lg:h-24 rounded-full mb-4"
             />
             <div className="flex flex-col items-center gap-2">
               <Link

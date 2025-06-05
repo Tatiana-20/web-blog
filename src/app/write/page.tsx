@@ -42,10 +42,12 @@ export default function CreatePostPage() {
         {
           title: data.title,
           content: data.content,
-          status: "PUBLISHED",
+          authorId: Number(session.user.id),
         },
         session.user.accessToken
       );
+
+      console.log(response);
 
       if (response.id) {
         reset();
