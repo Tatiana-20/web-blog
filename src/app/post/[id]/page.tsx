@@ -29,7 +29,7 @@ interface Post {
     id: number;
     content: string;
     createdAt: string;
-    user: {
+    user?: {
       id: number;
       name: string;
       lastname: string;
@@ -86,13 +86,15 @@ export default function PostDetail() {
 
     setReactionError(null);
     try {
-      const existingReaction = post?.reactions?.find(
-        (r) => r.user.id === parseInt(session.user.id) && r.type === type
+      const userId = parseInt(session.user.id);
+      const existingUserReaction = post?.reactions?.find(
+        (r) => r.user.id === userId
       );
 
-      if (existingReaction) {
+      if (existingUserReaction) {
+        // Si el usuario ya tiene una reacción, la eliminamos primero
         await DeleteReaction(
-          existingReaction.id,
+          existingUserReaction.id,
           session.user.accessToken as string
         );
         setPost((prevPost) => {
@@ -100,26 +102,32 @@ export default function PostDetail() {
           return {
             ...prevPost,
             reactions: (prevPost.reactions || []).filter(
-              (r) => r.id !== existingReaction.id
+              (r) => r.id !== existingUserReaction.id
             ),
           };
         });
+      }
+
+      // Si la reacción existente era del mismo tipo que la nueva, significa que se desmarcó
+      if (existingUserReaction?.type === type) {
+        return; // No hacemos nada más, ya se eliminó la reacción
+      }
+
+      // Creamos la nueva reacción
+      const response = await CreateReaction(
+        { userId: Number(session.user.id), postId, type },
+        session.user.accessToken as string
+      );
+      if (response) {
+        setPost((prevPost) => {
+          if (!prevPost) return null;
+          return {
+            ...prevPost,
+            reactions: [...(prevPost.reactions || []), response],
+          };
+        });
       } else {
-        const response = await CreateReaction(
-          { postId, type },
-          session.user.accessToken as string
-        );
-        if (response) {
-          setPost((prevPost) => {
-            if (!prevPost) return null;
-            return {
-              ...prevPost,
-              reactions: [...(prevPost.reactions || []), response],
-            };
-          });
-        } else {
-          setReactionError("Error al añadir la reacción.");
-        }
+        setReactionError("Error al añadir la reacción.");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -145,6 +153,7 @@ export default function PostDetail() {
     try {
       const response = await CreateComment(
         {
+          userId: Number(session.user.id),
           content: commentContent,
           postId,
         },
@@ -155,7 +164,7 @@ export default function PostDetail() {
           if (!prevPost) return null;
           return {
             ...prevPost,
-            comments: [...prevPost.comments, response],
+            comments: [...(prevPost.comments || []), response],
           };
         });
         setCommentContent("");
@@ -307,28 +316,37 @@ export default function PostDetail() {
           </p>
         ) : (
           <div className="space-y-4">
-            {post.comments?.map((comment) => (
-              <div
-                key={comment.id}
-                className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg"
-              >
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {comment.user.name} {comment.user.lastname}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                  {new Date(comment.createdAt).toLocaleDateString("es-ES", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-                <p className="text-gray-800 dark:text-gray-200">
-                  {comment.content}
-                </p>
-              </div>
-            ))}
+            {post.comments
+              ?.filter((comment) => comment && typeof comment.id === "number")
+              .map((comment) => (
+                <div
+                  key={comment.id}
+                  className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg"
+                >
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {comment.user
+                      ? `${comment.user.name} ${comment.user.lastname}`
+                      : "Usuario desconocido"}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    {comment.createdAt
+                      ? new Date(comment.createdAt).toLocaleDateString(
+                          "es-ES",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )
+                      : "Fecha desconocida"}
+                  </p>
+                  <p className="text-gray-800 dark:text-gray-200">
+                    {comment.content}
+                  </p>
+                </div>
+              ))}
           </div>
         )}
       </div>

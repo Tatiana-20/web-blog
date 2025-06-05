@@ -36,14 +36,14 @@ export default function Aside() {
                 href="/write"
                 className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded text-xs md:text-md"
               >
-                <IoNewspaper className="inline-block mr-2" />
+                <IoNewspaper className=" w-5 h-4 mr-2" />
                 <span className="hidden md:block">Escribir</span>
               </Link>
               <button
                 className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded text-xs md:text-md"
                 onClick={() => signOut()}
               >
-                <IoLogOut className="inline-block mr-2" />
+                <IoLogOut className=" w-5 h-4 mr-2" />
                 <span className="hidden md:block">Cerrar sesión</span>
               </button>
             </div>

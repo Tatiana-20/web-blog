@@ -1,5 +1,6 @@
 export const CreateComment = async (
   form: {
+    userId: number;
     content: string;
     postId: number;
   },

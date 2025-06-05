@@ -1,5 +1,6 @@
 export const CreateReaction = async (
   form: {
+    userId: number;
     postId: number;
     type: string;
   },
